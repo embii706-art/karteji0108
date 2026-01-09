@@ -3,8 +3,8 @@
  * Quick stats, recent activity, and useful shortcuts
  */
 
-// import { db, auth } from '../lib/firebase.js';
-// import { collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { db, auth } from '../lib/firebase.js';
+import { collection, query, where, orderBy, limit, getDocs, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 /**
  * Quick stats widget
@@ -246,43 +246,136 @@ export function upcomingEvents(events = []) {
 }
 
 /**
- * Load dashboard data
+ * Load dashboard data from Firebase
  * @returns {Promise<object>} Dashboard data
  */
 export async function loadDashboardData() {
   try {
-    // const user = auth.currentUser;
-    // if (!user) return null;
-
-    // In a real app, fetch from Firestore
-    // For now, return mock data
-    return {
-      stats: {
-        totalMembers: 24,
-        totalActivities: 12,
-        pendingApprovals: 3,
-        balance: 5420000
-      },
-      recentActivities: [
-        { type: 'activity', title: 'Rapat Bulanan dijadwalkan', time: '2 jam yang lalu' },
-        { type: 'member', title: 'Ahmad Fauzi bergabung', time: '5 jam yang lalu' },
-        { type: 'notification', title: 'Dokumen baru diupload', time: '1 hari yang lalu' },
-      ],
-      announcements: [
-        { 
-          title: 'Update Sistem v2.5', 
-          message: 'Sistem telah diperbarui dengan fitur baru dan peningkatan performa.',
+    const user = auth?.currentUser;
+    if (!user) {
+      // Return default data if not logged in
+      return {
+        stats: {
+          totalMembers: 0,
+          totalActivities: 0,
+          pendingApprovals: 0,
+          balance: 0
+        },
+        recentActivities: [],
+        announcements: [{
+          title: 'Selamat Datang di KARTEJI v2.5',
+          message: 'Silakan login untuk melihat data lengkap organisasi Anda.',
           date: '9 Jan 2026',
           important: true
-        }
-      ],
-      upcomingEvents: [
-        { day: '15', month: 'Jan', title: 'Rapat Bulanan', time: '14:00 - 16:00' },
-        { day: '20', month: 'Jan', title: 'Kegiatan Sosial', time: '09:00 - 12:00' },
-      ]
+        }],
+        upcomingEvents: []
+      };
+    }
+
+    // Fetch real data from Firestore
+    const [membersSnap, activitiesSnap, pendingSnap] = await Promise.all([
+      getCountFromServer(collection(db, 'members')),
+      getCountFromServer(collection(db, 'activities')),
+      getCountFromServer(query(collection(db, 'members'), where('status', '==', 'pending')))
+    ]);
+
+    // Get recent activities
+    const recentQuery = query(
+      collection(db, 'activities'),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+    const recentSnap = await getDocs(recentQuery);
+    const recentActivities = recentSnap.docs.map(doc => ({
+      type: 'activity',
+      title: doc.data().title || 'Kegiatan',
+      time: formatRelativeTime(doc.data().createdAt)
+    }));
+
+    // Get upcoming events
+    const upcomingQuery = query(
+      collection(db, 'activities'),
+      where('date', '>=', new Date()),
+      orderBy('date', 'asc'),
+      limit(4)
+    );
+    const upcomingSnap = await getDocs(upcomingQuery);
+    const upcomingEvents = upcomingSnap.docs.map(doc => {
+      const date = doc.data().date?.toDate() || new Date();
+      return {
+        day: date.getDate().toString(),
+        month: date.toLocaleDateString('id-ID', { month: 'short' }),
+        title: doc.data().title || 'Kegiatan',
+        time: doc.data().time || '00:00'
+      };
+    });
+
+    // Get finance balance (if finance collection exists)
+    let balance = 0;
+    try {
+      const financeSnap = await getDocs(collection(db, 'finance'));
+      balance = financeSnap.docs.reduce((sum, doc) => {
+        const amount = doc.data().amount || 0;
+        const type = doc.data().type;
+        return sum + (type === 'income' ? amount : -amount);
+      }, 0);
+    } catch (e) {
+      console.warn('Finance data not available:', e);
+    }
+
+    return {
+      stats: {
+        totalMembers: membersSnap.data().count,
+        totalActivities: activitiesSnap.data().count,
+        pendingApprovals: pendingSnap.data().count,
+        balance: balance
+      },
+      recentActivities,
+      announcements: [{
+        title: 'Update Sistem v2.5',
+        message: 'Sistem telah diperbarui dengan fitur baru dan peningkatan performa.',
+        date: '9 Jan 2026',
+        important: true
+      }],
+      upcomingEvents
     };
   } catch (error) {
     console.error('Error loading dashboard data:', error);
-    return null;
+    // Return fallback data on error
+    return {
+      stats: {
+        totalMembers: 0,
+        totalActivities: 0,
+        pendingApprovals: 0,
+        balance: 0
+      },
+      recentActivities: [],
+      announcements: [{
+        title: 'Gagal Memuat Data',
+        message: 'Terjadi kesalahan saat memuat data. Silakan muat ulang halaman.',
+        date: '9 Jan 2026',
+        important: false
+      }],
+      upcomingEvents: []
+    };
   }
+}
+
+/**
+ * Format timestamp to relative time
+ */
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return 'Baru saja';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  const now = new Date();
+  const diff = now - date;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return 'Baru saja';
+  if (minutes < 60) return `${minutes} menit yang lalu`;
+  if (hours < 24) return `${hours} jam yang lalu`;
+  if (days < 7) return `${days} hari yang lalu`;
+  return date.toLocaleDateString('id-ID');
 }

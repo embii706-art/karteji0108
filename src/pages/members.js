@@ -1,8 +1,11 @@
 
 import { emptyMembers } from '../components/EmptyState.js';
+import { db, auth } from '../lib/firebase.js';
+import { collection, query, orderBy, getDocs, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { cloudinarySmart } from '../lib/cloudinary.js';
 
 export async function members(){
-  setTimeout(() => bindEvents(), 0);
+  setTimeout(() => loadMembers(), 100);
   
   return `
     <section class="p-4 max-w-5xl mx-auto space-y-4">
@@ -22,7 +25,7 @@ export async function members(){
         
         <!-- Search & Filter -->
         <div class="mt-4 flex gap-2">
-          <input type="search" placeholder="Cari anggota..." class="flex-1 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] focus:border-[rgb(var(--primary))] focus:outline-none" />
+          <input type="search" id="memberSearch" placeholder="Cari anggota..." class="flex-1 h-10 px-4 rounded-xl border border-[var(--border)] bg-[var(--bg)] focus:border-[rgb(var(--primary))] focus:outline-none" />
           <button class="px-4 h-10 rounded-xl border border-[var(--border)] hover:bg-[var(--bg)] transition">
             <span class="material-symbols-rounded text-[20px]">filter_list</span>
           </button>
@@ -74,49 +77,128 @@ export async function members(){
   `;
 }
 
-function bindEvents() {
-  // Events will be added heress="flex items-center justify-between">
-        <h1 class="text-xl font-bold flex items-center gap-2">
-          <span class="material-symbols-rounded text-[28px]">group</span>
-          Anggota
-        </h1>
-        <button class="px-4 h-10 rounded-xl border border-[var(--border)] text-sm font-semibold active:scale-[0.98] transition">
-          <span class="material-symbols-rounded text-[18px]">filter_list</span>
-        </button>
-      </div>
-      
-      <div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
-        <div class="relative">
-          <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[20px] opacity-50">search</span>
-          <input type="text" placeholder="Cari anggota..." class="w-full h-10 pl-10 pr-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] text-sm" />
-        </div>
-      </div>
-      
-      <div class="grid grid-cols-2 gap-2">
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-center">
-          <div class="text-2xl font-bold">0</div>
-          <div class="text-xs opacity-70 mt-1">Total Anggota</div>
-        </div>
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-3 text-center">
-          <div class="text-2xl font-bold text-green-600">0</div>
-          <div class="text-xs opacity-70 mt-1">Online</div>
-        </div>
-      </div>
-      
-      <div id="membersContent">
-        ${skeletonList(5)}
-      </div>
-    </section>
-  `;
-}
-
-function loadMembers() {
+async function loadMembers() {
   const container = document.getElementById('membersContent');
   if (!container) return;
   
-  const members = [];
+  try {
+    const user = auth?.currentUser;
+    if (!user) {
+      container.innerHTML = emptyMembers();
+      return;
+    }
+
+    // Fetch members from Firestore
+    const q = query(collection(db, 'members'), orderBy('name', 'asc'));
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      container.innerHTML = emptyMembers();
+      return;
+    }
+
+    const members = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Render members list
+    container.innerHTML = members.map(member => {
+      const photoUrl = member.photoURL ? cloudinarySmart(member.photoURL, 200) : '/apple-touch-icon.png';
+      const isOnline = member.lastSeen && (Date.now() - member.lastSeen?.toDate?.() < 300000); // 5 min
+      
+      return `
+        <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 hover:shadow-md transition">
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <img src="${photoUrl}" alt="${member.name}" class="w-12 h-12 rounded-full object-cover" onerror="this.src='/apple-touch-icon.png'" />
+              ${isOnline ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>' : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold truncate">${member.name || 'Anggota'}</div>
+              <div class="text-xs opacity-70 mt-0.5">${member.role || 'Member'}</div>
+            </div>
+            <a href="#/members/${member.id}" class="px-3 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--bg)] transition flex items-center gap-1 text-sm">
+              Detail
+              <span class="material-symbols-rounded text-[16px]">chevron_right</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Update stats
+    updateMemberStats(members);
+    
+    // Search functionality
+    bindSearchEvents(members);
+  } catch (error) {
+    console.error('Error loading members:', error);
+    container.innerHTML = `
+      <div class="text-center py-8">
+        <span class="material-symbols-rounded text-[48px] opacity-30">error</span>
+        <p class="text-sm opacity-70 mt-2">Gagal memuat data anggota</p>
+      </div>
+    `;
+  }
+}
+
+function updateMemberStats(members) {
+  const totalEl = document.querySelector('#membersContent')?.parentElement?.querySelector('.text-2xl.font-bold');
+  const onlineEl = document.querySelector('.text-2xl.font-bold.text-green-600');
   
-  if (members.length === 0) {
-    container.innerHTML = emptyMembers();
+  if (totalEl) totalEl.textContent = members.length;
+  
+  const onlineCount = members.filter(m => {
+    return m.lastSeen && (Date.now() - m.lastSeen?.toDate?.() < 300000);
+  }).length;
+  
+  if (onlineEl) onlineEl.textContent = onlineCount;
+}
+
+function bindSearchEvents(members) {
+  const searchInput = document.getElementById('memberSearch');
+  const container = document.getElementById('membersContent');
+  
+  if (searchInput && container) {
+    searchInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase();
+      const filtered = members.filter(m => 
+        m.name?.toLowerCase().includes(keyword) || 
+        m.role?.toLowerCase().includes(keyword)
+      );
+      
+      // Re-render filtered members (simplified version)
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 opacity-70">Tidak ada hasil pencarian</div>`;
+      } else {
+        // Re-render with filtered data (same logic as loadMembers)
+        container.innerHTML = filtered.map(member => {
+          const photoUrl = member.photoURL ? cloudinarySmart(member.photoURL, 200) : '/apple-touch-icon.png';
+          const isOnline = member.lastSeen && (Date.now() - member.lastSeen?.toDate?.() < 300000);
+          
+          return `
+            <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 hover:shadow-md transition">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <img src="${photoUrl}" alt="${member.name}" class="w-12 h-12 rounded-full object-cover" onerror="this.src='/apple-touch-icon.png'" />
+                  ${isOnline ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>' : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold truncate">${member.name || 'Anggota'}</div>
+                  <div class="text-xs opacity-70 mt-0.5">${member.role || 'Member'}</div>
+                </div>
+                <a href="#/members/${member.id}" class="px-3 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--bg)] transition flex items-center gap-1 text-sm">
+                  Detail
+                  <span class="material-symbols-rounded text-[16px]">chevron_right</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    });
+  }
+}
   }
 }
