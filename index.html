@@ -80,19 +80,119 @@
     }
   </script>
   
-  <!-- Custom Styles -->
-  <link rel="stylesheet" href="/src/styles.css" />
-  
   <!-- Preconnect for faster loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://res.cloudinary.com" />
-</head>
-
-<body class="text-slate-900 dark:text-slate-100 antialiased" style="background: var(--bg-solid); background-image: var(--bg); background-attachment: fixed;">
   
-  <!-- Background Layer -->
+  <!-- Critical Inline Styles -->
   <style>
+    /* CSS Variables */
+    :root {
+      --primary: 59, 130, 246;
+      --bg-solid: #0f172a;
+      --bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    }
+
+    html.dark {
+      --bg-solid: #0f172a;
+      --bg: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+    }
+
+    html:not(.dark) {
+      --bg-solid: #f1f5f9;
+      --bg: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+    }
+
+    /* Glass Card Effect */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    html:not(.dark) .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Gradient Primary */
+    .gradient-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    }
+
+    /* Button Primary */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Material Symbols */
+    .material-symbols-rounded {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.05); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-slide-up { animation: slideUp 0.4s ease-out; }
+    .animate-bounce-in { animation: bounceIn 0.6s ease-out; }
+
+    .progress-bar-shimmer {
+      animation: shimmer 2s infinite linear;
+      background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+      background-size: 1000px 100%;
+    }
+
+    /* Body Background */
+    body {
+      background: var(--bg-solid);
+      background-image: var(--bg);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+
     body::before {
       content: '';
       position: fixed;
@@ -101,24 +201,64 @@
       z-index: -1;
       pointer-events: none;
     }
-    
-    /* Material Symbols Config */
-    .material-symbols-rounded {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+
+    /* 3D Card Effect */
+    .card-3d {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    
-    /* Loading Animation */
-    @keyframes shimmer {
-      0% { background-position: -1000px 0; }
-      100% { background-position: 1000px 0; }
+
+    .card-3d:hover {
+      transform: translateY(-4px) rotateX(2deg);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     }
-    
-    .progress-bar-shimmer {
-      animation: shimmer 2s infinite linear;
-      background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-      background-size: 1000px 100%;
+
+    /* Ripple Effect */
+    .ripple {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ripple::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.5);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .ripple:active::after {
+      width: 200px;
+      height: 200px;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
     }
   </style>
+</head>
+
+<body class="text-slate-900 dark:text-slate-100 antialiased"></body>
   
   <!-- Splash Screen -->
   <div id="splash" class="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
