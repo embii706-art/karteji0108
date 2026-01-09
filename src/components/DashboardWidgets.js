@@ -3,8 +3,7 @@
  * Quick stats, recent activity, and useful shortcuts
  */
 
-import { db, auth } from '../lib/firebase.js';
-import { collection, query, where, orderBy, limit, getDocs, getCountFromServer } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+// Firebase will be lazy loaded when needed
 
 /**
  * Quick stats widget
@@ -251,6 +250,10 @@ export function upcomingEvents(events = []) {
  */
 export async function loadDashboardData() {
   try {
+    // Lazy load Firebase
+    const { db, auth } = await import('../lib/firebase.js');
+    const { collection, query, where, orderBy, limit, getDocs, getCountFromServer } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    
     const user = auth?.currentUser;
     if (!user) {
       // Return default data if not logged in
@@ -269,6 +272,8 @@ export async function loadDashboardData() {
           important: true
         }],
         upcomingEvents: []
+      };
+    }
       };
     }
 

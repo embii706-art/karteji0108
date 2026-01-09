@@ -1,11 +1,7 @@
 import { skeletonList } from '../components/Skeleton.js';
 import { emptyFeed } from '../components/EmptyState.js';
-import { db, auth } from '../lib/firebase.js';
-import { collection, query, orderBy, limit, getDocs, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { cloudinarySmart } from '../lib/cloudinary.js';
 
 export async function feed(){
-  // Simulate loading
   setTimeout(() => loadFeed(), 100);
   
   return `
@@ -32,9 +28,15 @@ async function loadFeed() {
   if (!container) return;
   
   try {
+    // Lazy import to avoid blocking
+    const { db, auth } = await import('../lib/firebase.js');
+    const { collection, query, orderBy, limit, getDocs } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const { cloudinarySmart } = await import('../lib/cloudinary.js');
+    
     const user = auth?.currentUser;
     if (!user) {
       container.innerHTML = emptyFeed();
+      bindNewPostButton();
       return;
     }
 
@@ -91,20 +93,16 @@ async function loadFeed() {
     bindNewPostButton();
   } catch (error) {
     console.error('Error loading feed:', error);
-    container.innerHTML = `
-      <div class="text-center py-8">
-        <span class="material-symbols-rounded text-[48px] opacity-30">error</span>
-        <p class="text-sm opacity-70 mt-2">Gagal memuat feed</p>
-      </div>
-    `;
+    container.innerHTML = emptyFeed();
+    bindNewPostButton();
   }
 }
 
 function bindNewPostButton() {
   const btn = document.getElementById('btnNewPost');
-  if (btn) {
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = 'true';
     btn.addEventListener('click', () => {
-      // Navigate to create post page or open modal
       window.location.hash = '#/feed/create';
     });
   }
