@@ -1,11 +1,13 @@
 /**
- * main.js (v1.8.5 HANGFIX)
- * Target: Vercel/PWA kadang stuck di splash karena promise hang (auth/themeEvents/fetch)
- * Solusi:
- * - Watchdog: splash hilang maksimal 5 detik apapun yang terjadi
- * - Timeout wrapper untuk initFirebase + themeEvents
- * - Router start dilakukan lebih awal agar UI pasti muncul
- * - Global error/unhandledrejection -> toast + hide splash
+ * main.js (v2.5.0)
+ * Enhanced version with improved error handling, performance, and security
+ * 
+ * Features:
+ * - Watchdog: splash auto-hide after 5s max
+ * - Timeout wrapper for async operations (anti-hang)
+ * - Router starts early for instant UI
+ * - Global error handlers with user-friendly feedback
+ * - Progressive enhancement approach
  */
 import "./splashFinal.js";
 
@@ -73,7 +75,14 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 (async function boot(){
+  const bootStart = performance.now();
+  
   try{
+    // Initialize analytics first
+    const { analytics } = await import('./lib/analytics.js');
+    analytics.init();
+    analytics.trackEvent('app', 'boot_start');
+
     theme.init();
     net.init();
 
@@ -83,18 +92,35 @@ window.addEventListener('unhandledrejection', (e) => {
 
     // Firebase (timeout anti-hang)
     await withTimeout(initFirebase(), 8000, "initFirebase timeout");
+    analytics.trackEvent('app', 'firebase_ready');
 
     // PWA SW - pastikan path absolut (di Vercel sering gagal kalau relatif dari /src)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => analytics.trackEvent('pwa', 'sw_registered'))
+        .catch((e) => {
+          console.warn('SW registration failed:', e);
+          analytics.trackError('sw_error', e.message);
+        });
     }
 
     // Dynamic theme overlay (timeout anti-hang)
-    await withTimeout(themeEvents.init(), 5000, "themeEvents timeout").catch(()=>{});
+    await withTimeout(themeEvents.init(), 5000, "themeEvents timeout").catch((e)=>{
+      console.warn('Theme events init failed:', e);
+      analytics.trackError('theme_error', e.message);
+    });
+
+    const bootTime = performance.now() - bootStart;
+    analytics.trackPerformance('boot_complete', bootTime);
+    console.log(`[KARTEJI] Boot complete in ${Math.round(bootTime)}ms`);
 
   }catch(err){
-    console.error(err);
+    console.error('Boot error:', err);
     toast('Terjadi kesalahan saat memuat aplikasi.');
+    try {
+      const { analytics } = await import('./lib/analytics.js');
+      analytics.trackError('boot_error', err.message);
+    } catch {}
   }finally{
     clearTimeout(watchdog);
     removeSplash("");

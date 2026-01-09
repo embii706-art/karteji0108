@@ -9,6 +9,7 @@
   <link rel="manifest" href="/manifest.json" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="icon" href="/apple-touch-icon.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -28,7 +29,30 @@
     </div>
   </div>
 
-  <main id="app" class="min-h-screen"></main>
+  <!-- Toast notifications container -->
+  <div id="toastHost" class="fixed top-0 left-0 right-0 z-[9998] pointer-events-none p-3"></div>
+
+  <!-- Network status bar -->
+  <div id="netbar" class="fixed top-0 left-0 right-0 z-[9997] hidden">
+    <div id="netbarInner" class="mx-auto max-w-md px-3 py-2 text-sm rounded-b-2xl shadow bg-amber-500 text-black flex items-center gap-2">
+      <span id="netbarText"></span>
+    </div>
+  </div>
+
+  <!-- Theme decorations (seasonal overlays) -->
+  <div id="themeDecor" class="fixed inset-0 pointer-events-none z-0"></div>
+
+  <main id="app" class="min-h-screen relative z-10 pb-20"></main>
+
+  <!-- Bottom Navigation -->
+  <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 z-[9996] bg-[var(--nav)] border-t border-[var(--border)] backdrop-blur-lg bg-opacity-95">
+    <div class="h-16 max-w-md mx-auto flex items-center px-2"></div>
+  </nav>
+
+  <!-- Theme toggle button -->
+  <button id="themeBtn" class="fixed bottom-20 right-4 z-[9995] w-12 h-12 rounded-full bg-[var(--card)] border border-[var(--border)] shadow-lg flex items-center justify-center active:scale-95 transition" title="Ubah tema">
+    <span class="material-symbols-rounded text-[20px]">light_mode</span>
+  </button>
 
   <script>
     (function(){

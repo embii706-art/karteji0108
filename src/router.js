@@ -36,15 +36,44 @@ export const router = {
     this.go(normalizeHash());
   },
   async go(hash){
-    const fn = routes[hash] || pages.notFound;
-    const gatedHash = await authGate(hash);
-    if(gatedHash && gatedHash !== hash){
-      location.hash = gatedHash;
-      return;
+    try {
+      const fn = routes[hash] || pages.notFound;
+      const gatedHash = await authGate(hash);
+      if(gatedHash && gatedHash !== hash){
+        location.hash = gatedHash;
+        return;
+      }
+      
+      // Track page view
+      try {
+        const { analytics } = await import('./lib/analytics.js');
+        analytics.trackPageView(hash);
+      } catch {}
+      
+      // bottom nav visibility handled by render()
+      const html = await fn();
+      render(html, hash);
+      setTitle(hash);
+    } catch (err) {
+      console.error('Router error:', err);
+      try {
+        const { analytics } = await import('./lib/analytics.js');
+        analytics.trackError('router_error', err.message);
+      } catch {}
+      
+      // Show error page
+      const errorHtml = `
+        <section class="p-4 max-w-md mx-auto">
+          <div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+            <div class="font-bold text-red-500">Terjadi Kesalahan</div>
+            <div class="text-sm opacity-70 mt-1">Halaman gagal dimuat. Silakan coba lagi.</div>
+            <button onclick="location.hash='#/home'" class="mt-3 w-full h-10 rounded-xl bg-[rgb(var(--primary))] text-white">
+              Kembali ke Beranda
+            </button>
+          </div>
+        </section>
+      `;
+      render(errorHtml, hash);
     }
-    // bottom nav visibility handled by render()
-    const html = await fn();
-    render(html, hash);
-    setTitle(hash);
   }
 };

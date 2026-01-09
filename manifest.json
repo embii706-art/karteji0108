@@ -1,6 +1,7 @@
 {
-  "name": "KARTEJI",
+  "name": "KARTEJI v2.5",
   "short_name": "KARTEJI",
+  "description": "Aplikasi manajemen organisasi dengan fitur lengkap",
   "start_url": "./#/home",
   "display": "standalone",
   "background_color": "#0F172A",

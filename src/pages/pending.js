@@ -1,5 +1,5 @@
 
-import { signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { auth } from "../lib/firebase.js";
 
 export async function pending(){

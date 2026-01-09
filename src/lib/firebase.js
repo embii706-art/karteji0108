@@ -1,9 +1,9 @@
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getFunctions } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-functions.js";
-import { getMessaging } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFunctions } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+import { getMessaging } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAQxpD7ea9gHWGiU3wYXr0XHyl-SNyFYNs",
@@ -18,10 +18,17 @@ const firebaseConfig = {
 export let app, auth, db, functions, messaging;
 
 export async function initFirebase(){
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  functions = getFunctions(app);
-  // messaging only on secure contexts
-  try{ messaging = getMessaging(app); }catch{}
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    functions = getFunctions(app);
+    // messaging only on secure contexts
+    try{ messaging = getMessaging(app); }catch(e){
+      console.info('Firebase Messaging not available:', e.message);
+    }
+  } catch(e){
+    console.error('Firebase initialization failed:', e);
+    throw new Error('Failed to initialize Firebase');
+  }
 }
