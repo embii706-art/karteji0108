@@ -1,6 +1,7 @@
 /**
  * Dashboard Widgets for Home Page
  * Quick stats, recent activity, and useful shortcuts
+ * @version 3.0.0
  */
 
 // Firebase will be lazy loaded when needed
@@ -266,14 +267,12 @@ export async function loadDashboardData() {
         },
         recentActivities: [],
         announcements: [{
-          title: 'Selamat Datang di KARTEJI v2.5',
+          title: 'Selamat Datang di KARTEJI v3.0',
           message: 'Silakan login untuk melihat data lengkap organisasi Anda.',
           date: '9 Jan 2026',
           important: true
         }],
         upcomingEvents: []
-      };
-    }
       };
     }
 
@@ -337,8 +336,8 @@ export async function loadDashboardData() {
       },
       recentActivities,
       announcements: [{
-        title: 'Update Sistem v2.5',
-        message: 'Sistem telah diperbarui dengan fitur baru dan peningkatan performa.',
+        title: 'Update Sistem v3.0',
+        message: 'Sistem telah diperbarui dengan lazy loading, optimized imports, dan stabilitas lebih baik.',
         date: '9 Jan 2026',
         important: true
       }],

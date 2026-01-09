@@ -1,5 +1,5 @@
 
-const CACHE = 'karteji-v2.5.0';
+const CACHE = 'karteji-v3.0.0';
 const APP_SHELL = [
   './',
   './index.html',

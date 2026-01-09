@@ -1,5 +1,5 @@
 /**
- * Security utilities for KARTEJI v2.5
+ * Security utilities for KARTEJI v3.0
  * Provides input validation, sanitization, and XSS protection
  */
 

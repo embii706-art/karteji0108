@@ -36,7 +36,7 @@ export async function home() {
           <div class="flex items-center justify-between">
             <div>
               <h1 class="text-2xl font-bold mb-1">Selamat Datang di KARTEJI 👋</h1>
-              <p class="text-sm opacity-70">Sistem Manajemen Organisasi v2.5</p>
+              <p class="text-sm opacity-70">Sistem Manajemen Organisasi v3.0</p>
             </div>
             <span class="material-symbols-rounded text-[48px] opacity-20">dashboard</span>
           </div>
@@ -73,7 +73,7 @@ export async function home() {
         <div class="flex items-center justify-between">
           <div>
             <h1 class="text-2xl font-bold mb-1">Selamat Datang di KARTEJI 👋</h1>
-            <p class="text-sm opacity-70">Sistem Manajemen Organisasi v2.5</p>
+            <p class="text-sm opacity-70">Sistem Manajemen Organisasi v3.0</p>
           </div>
           <button id="refreshBtn" class="px-4 h-10 rounded-xl border border-[var(--border)] hover:bg-[var(--bg)] transition active:scale-95 flex items-center gap-2" title="Refresh data">
             <span class="material-symbols-rounded text-[20px]">refresh</span>

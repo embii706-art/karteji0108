@@ -1,7 +1,7 @@
 {
-  "name": "KARTEJI v2.5",
+  "name": "KARTEJI v3.0",
   "short_name": "KARTEJI",
-  "description": "Aplikasi manajemen organisasi dengan fitur lengkap",
+  "description": "Sistem Manajemen Organisasi - Lazy Loading & Zero Blank Pages",
   "start_url": "./#/home",
   "display": "standalone",
   "background_color": "#0F172A",

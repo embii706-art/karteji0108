@@ -1,7 +1,7 @@
 /**
  * Empty State Component
  * Provides friendly illustrations and CTAs when no data is available
- * @version 2.5.0
+ * @version 3.0.0
  */
 
 /**

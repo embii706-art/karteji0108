@@ -1,6 +1,6 @@
 /**
- * main.js (v2.5.0)
- * Enhanced version with improved error handling, performance, and security
+ * main.js (v3.0.0)
+ * Enhanced version with lazy loading, optimized imports, dan stability improvements
  * 
  * Features:
  * - Watchdog: splash auto-hide after 5s max

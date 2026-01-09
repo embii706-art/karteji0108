@@ -1,5 +1,5 @@
 /**
- * Analytics and performance monitoring for KARTEJI v2.5
+ * Analytics and performance monitoring for KARTEJI v3.0
  * Lightweight client-side analytics with privacy-first approach
  */
 
