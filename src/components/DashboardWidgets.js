@@ -5,7 +5,7 @@
 
 import { db, auth } from '../lib/firebase.js';
 import { collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { skeletonStats, skeletonList } from '../components/Skeleton.js';
+import { skeletonStats, skeletonList } from './Skeleton.js';
 
 /**
  * Quick stats widget
