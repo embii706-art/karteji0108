@@ -6,7 +6,7 @@ import { auth, db } from "./firebase.js";
 let cachedProfile=null;
 let cachedUid=null;
 
-async function getProfile(uid){
+export async function getProfile(uid){
   if(cachedUid===uid && cachedProfile) return cachedProfile;
   const ref = doc(db,'profiles',uid);
   const snap = await getDoc(ref);
@@ -44,4 +44,17 @@ export async function authGate(hash){
   }
 
   return null;
+}
+
+/**
+ * Check if profile has one of required roles
+ * profile.role can be string; profile.roles can be array of strings
+ */
+export function hasRole(profile, required){
+  if(!profile) return false;
+  const req = Array.isArray(required)? required: [required];
+  const primary = profile.role? [profile.role]: [];
+  const extras = Array.isArray(profile.roles)? profile.roles: [];
+  const all = new Set([...primary, ...extras].map(String));
+  return req.some(r=> all.has(String(r)));
 }

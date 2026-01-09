@@ -1,5 +1,5 @@
 import { skeletonList } from '../components/Skeleton.js';
-import { emptyFeed } from '../components/EmptyState.js';
+import { emptyFeed, errorState } from '../components/EmptyState.js';
 
 export async function feed(){
   setTimeout(() => loadFeed(), 100);
@@ -123,6 +123,17 @@ function formatDate(date) {
 }
 
 export async function feedCreate(){
+  // Role gate: admin or editor
+  try {
+    const { auth } = await import('../lib/firebase.js');
+    const { getProfile, hasRole } = await import('../lib/gates.js');
+    const user = auth?.currentUser;
+    if(!user) return errorState('Silakan masuk untuk membuat posting.');
+    const profile = await getProfile(user.uid);
+    if(!hasRole(profile, ['admin','editor'])){
+      return errorState('Anda tidak memiliki izin untuk membuat posting. Hubungi admin.');
+    }
+  } catch {}
   setTimeout(() => bindCreatePostForm(), 0);
   return `
     <section class="p-4 max-w-2xl mx-auto space-y-4">
@@ -181,9 +192,26 @@ function bindCreatePostForm(){
 }
 
 export async function feedEdit(){
-  setTimeout(()=> bindEditPostForm(), 100);
   const params = new URLSearchParams((location.hash.split('?')[1])||'');
   const id = params.get('id');
+  // Role gate: admin/editor or author
+  try{
+    const { db, auth } = await import('../lib/firebase.js');
+    const { getProfile, hasRole } = await import('../lib/gates.js');
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const user = auth?.currentUser; if(!user) return errorState('Silakan masuk untuk mengedit posting.');
+    const profile = await getProfile(user.uid);
+    if(!hasRole(profile, ['admin','editor'])){
+      // allow author to edit own post
+      try{
+        const snap = await getDoc(doc(db,'posts', id));
+        if(!snap.exists() || snap.data().authorId !== user.uid){
+          return errorState('Anda tidak memiliki izin untuk mengedit posting ini.');
+        }
+      }catch{ return errorState('Posting tidak ditemukan.'); }
+    }
+  }catch{}
+  setTimeout(()=> bindEditPostForm(), 100);
   return `
     <section class="p-4 max-w-2xl mx-auto space-y-4">
       <div class="flex items-center gap-2">

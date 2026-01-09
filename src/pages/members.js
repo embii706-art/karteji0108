@@ -125,6 +125,16 @@ async function loadMembers() {
 }
 
 export async function membersCreate(){
+  // Role gate: admin only
+  try{
+    const { auth } = await import('../lib/firebase.js');
+    const { getProfile, hasRole } = await import('../lib/gates.js');
+    const user = auth?.currentUser; if(!user) return `<section class="p-4">Anda harus masuk.</section>`;
+    const profile = await getProfile(user.uid);
+    if(!hasRole(profile, ['admin'])){
+      return `<section class="p-4 max-w-md mx-auto"><div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center"><span class="material-symbols-rounded text-[40px] text-amber-500">lock</span><div class="font-semibold mt-2">Akses Ditolak</div><div class="text-sm opacity-70 mt-1">Hanya admin yang boleh menambah anggota.</div><button onclick="location.hash='#/members'" class="mt-3 w-full h-10 rounded-xl border border-[var(--border)]">Kembali</button></div></section>`;
+    }
+  }catch{}
   setTimeout(()=> bindMemberCreateForm(), 0);
   return `
     <section class="p-4 max-w-2xl mx-auto space-y-4">
@@ -177,9 +187,19 @@ function bindMemberCreateForm(){
 }
 
 export async function membersEdit(){
-  setTimeout(()=> bindMemberEditForm(), 100);
   const params = new URLSearchParams((location.hash.split('?')[1])||'');
   const id = params.get('id');
+  // Role gate: admin only
+  try{
+    const { auth } = await import('../lib/firebase.js');
+    const { getProfile, hasRole } = await import('../lib/gates.js');
+    const user = auth?.currentUser; if(!user) return `<section class="p-4">Anda harus masuk.</section>`;
+    const profile = await getProfile(user.uid);
+    if(!hasRole(profile, ['admin'])){
+      return `<section class="p-4 max-w-md mx-auto"><div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 text-center"><span class="material-symbols-rounded text-[40px] text-amber-500">lock</span><div class="font-semibold mt-2">Akses Ditolak</div><div class="text-sm opacity-70 mt-1">Hanya admin yang boleh mengedit anggota.</div><button onclick="location.hash='#/members'" class="mt-3 w-full h-10 rounded-xl border border-[var(--border)]">Kembali</button></div></section>`;
+    }
+  }catch{}
+  setTimeout(()=> bindMemberEditForm(), 100);
   return `
     <section class="p-4 max-w-2xl mx-auto space-y-4">
       <div class="flex items-center gap-2">
