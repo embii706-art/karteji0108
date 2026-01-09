@@ -1,0 +1,26 @@
+
+:root{
+  --primary: 37 99 235; /* blue-600 */
+  --bg: rgb(248 250 252);
+  --card: rgb(241 245 249);
+  --text: rgb(15 23 42);
+  --muted: rgb(100 116 139);
+  --border: rgb(226 232 240);
+  --nav: rgb(255 255 255);
+  --accent: rgb(var(--primary));
+}
+.dark{
+  --bg: rgb(15 23 42);
+  --card: rgb(30 41 59);
+  --text: rgb(241 245 249);
+  --muted: rgb(148 163 184);
+  --border: rgb(51 65 85);
+  --nav: rgb(15 23 42);
+}
+@keyframes splashPop { 0%{transform:scale(.94);opacity:.0} 100%{transform:scale(1);opacity:1}}
+.animate-splashPop{animation:splashPop .45s ease-out both;}
+@keyframes floatSlow { 0%{transform:translateY(0)} 50%{transform:translateY(-8px)} 100%{transform:translateY(0)}}
+@keyframes shimmer { 0%{background-position:0% 0} 100%{background-position:200% 0}}
+.skeleton{background:linear-gradient(90deg, rgba(148,163,184,.15) 0%, rgba(148,163,184,.30) 50%, rgba(148,163,184,.15) 100%); background-size:200% 100%; animation:shimmer 1.2s linear infinite;}
+@keyframes fadeUp {from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+.page-enter{animation:fadeUp .22s ease-out both;}

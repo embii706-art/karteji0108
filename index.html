@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0F172A" />
+  <title>KARTEJI</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" href="/apple-touch-icon.png" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+  </script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+  <div id="splash" class="fixed inset-0 z-[9999] flex items-center justify-center">
+    <div class="w-[min(360px,92vw)] rounded-2xl border border-slate-200/70 dark:border-slate-700/60 bg-white/90 dark:bg-slate-900/70 backdrop-blur p-5 shadow-2xl text-center">
+      <img src="/apple-touch-icon.png" alt="Logo KARTEJI" class="w-[72px] h-[72px] mx-auto rounded-2xl shadow-lg object-cover" />
+      <div class="mt-3 text-lg font-extrabold tracking-wide">KARTEJI</div>
+      <div id="splashText" class="mt-1 text-sm text-slate-600 dark:text-slate-300">Memuat…</div>
+      <div class="mt-4 h-2 rounded-full bg-slate-200/70 dark:bg-slate-700/60 overflow-hidden">
+        <div class="h-full w-1/3 rounded-full bg-blue-500 animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+
+  <main id="app" class="min-h-screen"></main>
+
+  <script>
+    (function(){
+      const splash = document.getElementById('splash');
+      const splashText = document.getElementById('splashText');
+      const app = document.getElementById('app');
+
+      function hideSplash(){
+        if(!splash) return;
+        splash.style.opacity = '0';
+        splash.style.transition = 'opacity 220ms ease';
+        setTimeout(()=> splash.remove(), 240);
+      }
+
+      function showError(title, detail){
+        hideSplash();
+        app.innerHTML = `
+          <section class="p-4 max-w-md mx-auto space-y-3">
+            <div class="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
+              <div class="font-semibold text-base">${title}</div>
+              <div class="text-sm opacity-80 mt-1">${detail}</div>
+              <div class="flex gap-2 mt-3">
+                <button id="btnReload" class="w-full rounded-xl px-4 py-2 bg-blue-600 text-white">Muat Ulang</button>
+                <button id="btnBypass" class="w-full rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-700">Lewati Splash</button>
+              </div>
+              <div class="text-xs opacity-70 mt-3">
+                Tips iOS: hapus cache Safari / uninstall PWA lalu install ulang.
+              </div>
+            </div>
+          </section>
+        `;
+        document.getElementById('btnReload')?.addEventListener('click', ()=> location.reload());
+        document.getElementById('btnBypass')?.addEventListener('click', ()=> { hideSplash(); location.hash = '#/home'; });
+      }
+
+      setTimeout(()=>{
+        if (splashText) splashText.textContent = 'Menyiapkan aplikasi…';
+        if (splash && document.body.contains(splash)) {
+          hideSplash();
+          if (app && !app.innerHTML.trim()) {
+            app.innerHTML = `
+              <section class="p-4 max-w-md mx-auto">
+                <div class="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
+                  <div class="font-semibold">UI belum tampil.</div>
+                  <div class="text-sm opacity-80 mt-1">
+                    Biasanya karena JavaScript utama tidak termuat di hosting (404 / path salah / cache SW).
+                  </div>
+                </div>
+              </section>
+            `;
+          }
+        }
+      }, 5000);
+
+      (async () => {
+        try {
+          if (splashText) splashText.textContent = 'Memuat modul…';
+          await import('/src/main.js');
+        } catch (e) {
+          console.error('MAIN MODULE ERROR', e);
+          const msg = (e && e.message) ? e.message : String(e);
+          showError('Gagal memuat JavaScript aplikasi.',
+            'Error: <code>' + msg.replace(/</g,'&lt;') + '</code><br/>Pastikan file <code>/src/main.js</code> ada di hasil deploy (tidak hilang saat build Vercel).'
+          );
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>
