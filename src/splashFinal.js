@@ -1,7 +1,7 @@
 /**
- * Splash Final (v1.8.3)
- * - Tidak mungkin stuck: ada timeout fail-safe
- * - Animasi halus (fade + scale)
+ * Splash Final (v2.5.0)
+ * - Premium glassmorphism design
+ * - Enhanced with gradient animations
  * - Dark/Light/System friendly
  * - Respect prefers-reduced-motion
  * - Bisa dipanggil manual: window.KARTEJI_SPLASH.done()

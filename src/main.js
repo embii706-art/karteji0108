@@ -1,11 +1,6 @@
 /**
- * main.js (v1.8.5 HANGFIX)
- * Target: Vercel/PWA kadang stuck di splash karena promise hang (auth/themeEvents/fetch)
- * Solusi:
- * - Watchdog: splash hilang maksimal 5 detik apapun yang terjadi
- * - Timeout wrapper untuk initFirebase + themeEvents
- * - Router start dilakukan lebih awal agar UI pasti muncul
- * - Global error/unhandledrejection -> toast + hide splash
+ * main.js (v2.5 PREMIUM)
+ * Enhanced with glassmorphism, 3D effects, smart search, and social sharing
  */
 import "./splashFinal.js";
 
@@ -16,6 +11,8 @@ import { toast } from './components/Toast.js';
 import { theme } from './lib/theme.js';
 import { net } from './lib/net.js';
 import { themeEvents } from './lib/themeEvents.js';
+import { initSearchData, openSearch } from './components/SmartSearch.js';
+import { shareContent, mountShareButton } from './components/SocialShare.js';
 
 function removeSplash(reason = "") {
   // 1) splashFinal API (jika ada)
@@ -77,6 +74,13 @@ window.addEventListener('unhandledrejection', (e) => {
     theme.init();
     net.init();
 
+    // Initialize v2.5 features
+    initSearchData();
+    
+    // Expose global functions for UI
+    window.openSmartSearch = openSearch;
+    window.openShareDialog = shareContent;
+
     // Mulai router dulu supaya UI tidak kosong walau Firebase lambat
     mountBottomNav();
     router.start();
@@ -91,6 +95,9 @@ window.addEventListener('unhandledrejection', (e) => {
 
     // Dynamic theme overlay (timeout anti-hang)
     await withTimeout(themeEvents.init(), 5000, "themeEvents timeout").catch(()=>{});
+    
+    // Mount floating share button
+    mountShareButton();
 
   }catch(err){
     console.error(err);
