@@ -123,69 +123,122 @@ async function loadMembers() {
     container.innerHTML = emptyMembers();
   }
 }
-  const container = document.getElementById('membersContent');
-  if (!container) return;
-  
-  try {
-    const user = auth?.currentUser;
-    if (!user) {
-      container.innerHTML = emptyMembers();
-      return;
-    }
 
-    // Fetch members from Firestore
-    const q = query(collection(db, 'members'), orderBy('name', 'asc'));
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty) {
-      container.innerHTML = emptyMembers();
-      return;
-    }
-
-    const members = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    // Render members list
-    container.innerHTML = members.map(member => {
-      const photoUrl = member.photoURL ? cloudinarySmart(member.photoURL, 200) : '/apple-touch-icon.png';
-      const isOnline = member.lastSeen && (Date.now() - member.lastSeen?.toDate?.() < 300000); // 5 min
-      
-      return `
-        <div class="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 hover:shadow-md transition">
-          <div class="flex items-center gap-3">
-            <div class="relative">
-              <img src="${photoUrl}" alt="${member.name}" class="w-12 h-12 rounded-full object-cover" onerror="this.src='/apple-touch-icon.png'" />
-              ${isOnline ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>' : ''}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="font-semibold truncate">${member.name || 'Anggota'}</div>
-              <div class="text-xs opacity-70 mt-0.5">${member.role || 'Member'}</div>
-            </div>
-            <a href="#/members/${member.id}" class="px-3 h-8 rounded-lg border border-[var(--border)] hover:bg-[var(--bg)] transition flex items-center gap-1 text-sm">
-              Detail
-              <span class="material-symbols-rounded text-[16px]">chevron_right</span>
-            </a>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Update stats
-    updateMemberStats(members);
-    
-    // Search functionality
-    bindSearchEvents(members);
-  } catch (error) {
-    console.error('Error loading members:', error);
-    container.innerHTML = `
-      <div class="text-center py-8">
-        <span class="material-symbols-rounded text-[48px] opacity-30">error</span>
-        <p class="text-sm opacity-70 mt-2">Gagal memuat data anggota</p>
+export async function membersCreate(){
+  setTimeout(()=> bindMemberCreateForm(), 0);
+  return `
+    <section class="p-4 max-w-2xl mx-auto space-y-4">
+      <div class="flex items-center gap-2">
+        <button onclick="location.hash='#/members'" class="rounded-xl border border-[var(--border)] px-3 h-10 flex items-center">
+          <span class="material-symbols-rounded text-[20px]">chevron_left</span>
+        </button>
+        <h1 class="text-xl font-bold">Tambah Anggota</h1>
       </div>
-    `;
-  }
+      <form id="memberForm" class="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <input name="name" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Nama lengkap" />
+        <input name="email" type="email" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Email" />
+        <input name="role" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Peran (role)" />
+        <input type="file" name="photo" accept="image/*" class="w-full text-sm" />
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 h-10 rounded-xl bg-[rgb(var(--primary))] text-white text-sm font-semibold">Simpan</button>
+          <button type="button" onclick="location.hash='#/members'" class="px-4 h-10 rounded-xl border border-[var(--border)] text-sm">Batal</button>
+        </div>
+      </form>
+    </section>
+  `;
+}
+
+function bindMemberCreateForm(){
+  const form = document.getElementById('memberForm');
+  if(!form || form.dataset.bound) return; form.dataset.bound = 'true';
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    try{
+      const { db } = await import('../lib/firebase.js');
+      const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+      const { sanitizeHtml, isValidEmail } = await import('../lib/security.js');
+      const { uploadToCloudinary } = await import('../lib/cloudinary.js');
+      const fd = new FormData(form);
+      const name = sanitizeHtml(String(fd.get('name')||''));
+      const email = String(fd.get('email')||'');
+      const role = sanitizeHtml(String(fd.get('role')||''));
+      if(!name){ alert('Nama wajib diisi'); return; }
+      if(email && !isValidEmail(email)){ alert('Email tidak valid'); return; }
+      let photoURL = '';
+      const photoFile = fd.get('photo');
+      if(photoFile && photoFile.size){ photoURL = await uploadToCloudinary(photoFile); }
+      await addDoc(collection(db,'members'),{
+        name, email, role, photoURL,
+        status: 'active', createdAt: serverTimestamp()
+      });
+      location.hash = '#/members';
+    }catch(err){ console.error('Create member error:', err); alert('Gagal menyimpan'); }
+  });
+}
+
+export async function membersEdit(){
+  setTimeout(()=> bindMemberEditForm(), 100);
+  const params = new URLSearchParams((location.hash.split('?')[1])||'');
+  const id = params.get('id');
+  return `
+    <section class="p-4 max-w-2xl mx-auto space-y-4">
+      <div class="flex items-center gap-2">
+        <button onclick="location.hash='#/members'" class="rounded-xl border border-[var(--border)] px-3 h-10 flex items-center">
+          <span class="material-symbols-rounded text-[20px]">chevron_left</span>
+        </button>
+        <h1 class="text-xl font-bold">Edit Anggota</h1>
+      </div>
+      <form id="memberEditForm" data-id="${id||''}" class="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <input name="name" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Nama lengkap" />
+        <input name="email" type="email" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Email" />
+        <input name="role" class="w-full h-10 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-3 text-sm" placeholder="Peran (role)" />
+        <input type="file" name="photo" accept="image/*" class="w-full text-sm" />
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 h-10 rounded-xl bg-[rgb(var(--primary))] text-white text-sm font-semibold">Update</button>
+          <button type="button" id="btnDeleteMember" class="px-4 h-10 rounded-xl border border-red-400 text-red-600 text-sm">Hapus</button>
+        </div>
+      </form>
+    </section>
+  `;
+}
+
+async function bindMemberEditForm(){
+  const form = document.getElementById('memberEditForm');
+  if(!form || form.dataset.bound) return; form.dataset.bound = 'true';
+  const id = form.dataset.id;
+  try{
+    const { db } = await import('../lib/firebase.js');
+    const { doc, getDoc, updateDoc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const { sanitizeHtml, isValidEmail } = await import('../lib/security.js');
+    const { uploadToCloudinary } = await import('../lib/cloudinary.js');
+    const ref = doc(db,'members', id);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      const data = snap.data();
+      form.name.value = data.name||'';
+      form.email.value = data.email||'';
+      form.role.value = data.role||'';
+    }
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+      const name = sanitizeHtml(String(fd.get('name')||''));
+      const email = String(fd.get('email')||'');
+      const role = sanitizeHtml(String(fd.get('role')||''));
+      if(!name){ alert('Nama wajib diisi'); return; }
+      if(email && !isValidEmail(email)){ alert('Email tidak valid'); return; }
+      const update = { name, email, role };
+      const photoFile = fd.get('photo');
+      if(photoFile && photoFile.size){ update.photoURL = await uploadToCloudinary(photoFile); }
+      await updateDoc(ref, update);
+      location.hash = '#/members';
+    });
+    const btnDel = document.getElementById('btnDeleteMember');
+    if(btnDel){ btnDel.addEventListener('click', async ()=>{
+      try{ await deleteDoc(ref); location.hash = '#/members'; }
+      catch(err){ console.error('Delete member error:', err); alert('Gagal hapus'); }
+    }); }
+  }catch(err){ console.error('Bind member edit error:', err); }
 }
 
 function updateMemberStats(members) {

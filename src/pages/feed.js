@@ -121,30 +121,127 @@ function formatDate(date) {
   if (days < 7) return `${days} hari yang lalu`;
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
-  // Simulate empty state (replace with actual Firestore query)
-  const posts = [];
-  
-  if (posts.length === 0) {
-    container.innerHTML = emptyFeed();
-  } else {
-    // Render posts here
-    container.innerHTML = posts.map(post => renderPost(post)).join('');
-  }
+
+export async function feedCreate(){
+  setTimeout(() => bindCreatePostForm(), 0);
+  return `
+    <section class="p-4 max-w-2xl mx-auto space-y-4">
+      <div class="flex items-center gap-2">
+        <button onclick="location.hash='#/feed'" class="rounded-xl border border-[var(--border)] px-3 h-10 flex items-center">
+          <span class="material-symbols-rounded text-[20px]">chevron_left</span>
+        </button>
+        <h1 class="text-xl font-bold">Buat Posting</h1>
+      </div>
+      <form id="postForm" class="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <textarea name="content" rows="4" class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3 text-sm" placeholder="Tulis pengumuman atau informasi..."></textarea>
+        <input type="file" name="image" accept="image/*" class="w-full text-sm" />
+        <label class="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" name="important" /> Tandai sebagai penting
+        </label>
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 h-10 rounded-xl bg-[rgb(var(--primary))] text-white text-sm font-semibold">Simpan</button>
+          <button type="button" id="btnCancel" class="px-4 h-10 rounded-xl border border-[var(--border)] text-sm">Batal</button>
+        </div>
+      </form>
+    </section>
+  `;
 }
 
-function renderPost(post) {
+function bindCreatePostForm(){
+  const form = document.getElementById('postForm');
+  const btnCancel = document.getElementById('btnCancel');
+  if(btnCancel){ btnCancel.addEventListener('click', ()=> location.hash = '#/feed'); }
+  if(!form || form.dataset.bound) return; form.dataset.bound = 'true';
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    try{
+      const { db, auth } = await import('../lib/firebase.js');
+      const { addDoc, collection, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+      const { uploadToCloudinary } = await import('../lib/cloudinary.js');
+      const { sanitizeHtml } = await import('../lib/security.js');
+      const user = auth?.currentUser; if(!user) return;
+      const fd = new FormData(form);
+      const contentRaw = String(fd.get('content')||'');
+      const content = sanitizeHtml(contentRaw);
+      const imgFile = fd.get('image');
+      let imageUrl = '';
+      if(imgFile && imgFile.size){ imageUrl = await uploadToCloudinary(imgFile); }
+      const important = fd.get('important') === 'on';
+      await addDoc(collection(db,'posts'),{
+        authorId: user.uid,
+        authorName: user.displayName || 'Pengguna',
+        authorPhoto: user.photoURL || '',
+        content, imageUrl, important,
+        likes: 0, comments: 0,
+        createdAt: serverTimestamp()
+      });
+      location.hash = '#/feed';
+    }catch(err){ console.error('Create post error:', err); alert('Gagal menyimpan posting'); }
+  });
+}
+
+export async function feedEdit(){
+  setTimeout(()=> bindEditPostForm(), 100);
+  const params = new URLSearchParams((location.hash.split('?')[1])||'');
+  const id = params.get('id');
   return `
-    <div class="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-full bg-[rgb(var(--primary))] flex items-center justify-center text-white font-bold">
-          ${post.author.charAt(0)}
-        </div>
-        <div class="flex-1">
-          <div class="font-semibold">${post.author}</div>
-          <div class="text-xs opacity-70">${post.timestamp}</div>
-          <div class="mt-2 text-sm">${post.content}</div>
-        </div>
+    <section class="p-4 max-w-2xl mx-auto space-y-4">
+      <div class="flex items-center gap-2">
+        <button onclick="location.hash='#/feed'" class="rounded-xl border border-[var(--border)] px-3 h-10 flex items-center">
+          <span class="material-symbols-rounded text-[20px]">chevron_left</span>
+        </button>
+        <h1 class="text-xl font-bold">Edit Posting</h1>
       </div>
-    </div>
+      <form id="postEditForm" data-id="${id||''}" class="space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+        <textarea name="content" rows="4" class="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] p-3 text-sm" placeholder="Konten..."></textarea>
+        <input type="file" name="image" accept="image/*" class="w-full text-sm" />
+        <label class="inline-flex items-center gap-2 text-sm">
+          <input type="checkbox" name="important" /> Penting
+        </label>
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 h-10 rounded-xl bg-[rgb(var(--primary))] text-white text-sm font-semibold">Update</button>
+          <button type="button" id="btnDeletePost" class="px-4 h-10 rounded-xl border border-red-400 text-red-600 text-sm">Hapus</button>
+        </div>
+      </form>
+    </section>
   `;
+}
+
+async function bindEditPostForm(){
+  const form = document.getElementById('postEditForm');
+  if(!form || form.dataset.bound) return; form.dataset.bound = 'true';
+  const id = form.dataset.id;
+  try{
+    const { db, auth } = await import('../lib/firebase.js');
+    const { doc, getDoc, updateDoc, deleteDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+    const { uploadToCloudinary } = await import('../lib/cloudinary.js');
+    const { sanitizeHtml } = await import('../lib/security.js');
+    const ref = doc(db,'posts', id);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      const data = snap.data();
+      form.content.value = data.content||'';
+      form.important.checked = !!data.important;
+    }
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      try{
+        const fd = new FormData(form);
+        const content = sanitizeHtml(String(fd.get('content')||''));
+        const important = fd.get('important') === 'on';
+        const imgFile = fd.get('image');
+        const update = { content, important, updatedAt: serverTimestamp() };
+        if(imgFile && imgFile.size){ update.imageUrl = await uploadToCloudinary(imgFile); }
+        await updateDoc(ref, update);
+        location.hash = '#/feed';
+      }catch(err){ console.error('Update post error:', err); alert('Gagal update'); }
+    });
+    const btnDel = document.getElementById('btnDeletePost');
+    if(btnDel){
+      btnDel.addEventListener('click', async ()=>{
+        try{ await deleteDoc(ref); location.hash = '#/feed'; }
+        catch(err){ console.error('Delete post error:', err); alert('Gagal hapus'); }
+      });
+    }
+  }catch(err){ console.error('Bind edit form error:', err); }
 }
