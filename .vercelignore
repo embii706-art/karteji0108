@@ -1,0 +1,15 @@
+node_modules
+functions
+.git
+.gitignore
+.firebaserc
+firebase.json
+firestore.rules
+README.md
+SETUP.md
+CHECKLIST.md
+QUICKSTART.md
+ARCHITECTURE.md
+TROUBLESHOOTING_VERCEL.md
+setup.sh
+package-lock.json
