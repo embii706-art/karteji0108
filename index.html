@@ -80,6 +80,9 @@
     }
   </script>
   
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/src/styles.css" />
+  
   <!-- Preconnect for faster loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -321,7 +324,35 @@
       e.preventDefault();
       deferredPrompt = e;
       console.log('💾 PWA install prompt available');
+      
+      // Store for later use
+      window.deferredPrompt = deferredPrompt;
+    });
+    
+    // Track successful install
+    window.addEventListener('appinstalled', () => {
+      console.log('✅ PWA installed successfully');
+      deferredPrompt = null;
     });
   </script>
+  
+  <!-- NoScript Fallback -->
+  <noscript>
+    <div style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(to bottom right, #0f172a, #1e3a8a, #0f172a); color: white; font-family: system-ui, -apple-system, sans-serif; padding: 20px; text-align: center;">
+      <div style="max-width: 400px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px; border: 1px solid rgba(255,255,255,0.1);">
+        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px;">⚠️ JavaScript Diperlukan</h1>
+        <p style="opacity: 0.9; line-height: 1.6;">
+          Aplikasi KARTEJI memerlukan JavaScript untuk berfungsi. 
+          Silakan aktifkan JavaScript di browser Anda.
+        </p>
+        <div style="margin-top: 20px; padding: 12px; background: rgba(59, 130, 246, 0.2); border-radius: 10px; font-size: 14px;">
+          <strong>Cara mengaktifkan:</strong><br/>
+          Chrome: Settings → Privacy → Site Settings → JavaScript<br/>
+          Safari: Preferences → Security → Enable JavaScript<br/>
+          Firefox: Preferences → Content → Enable JavaScript
+        </div>
+      </div>
+    </div>
+  </noscript>
 </body>
 </html>
