@@ -3,9 +3,8 @@
  * Quick stats, recent activity, and useful shortcuts
  */
 
-import { db, auth } from '../lib/firebase.js';
-import { collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-import { skeletonStats, skeletonList } from './Skeleton.js';
+// import { db, auth } from '../lib/firebase.js';
+// import { collection, query, where, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 
 /**
  * Quick stats widget
@@ -252,8 +251,8 @@ export function upcomingEvents(events = []) {
  */
 export async function loadDashboardData() {
   try {
-    const user = auth.currentUser;
-    if (!user) return null;
+    // const user = auth.currentUser;
+    // if (!user) return null;
 
     // In a real app, fetch from Firestore
     // For now, return mock data
