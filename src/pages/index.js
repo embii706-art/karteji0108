@@ -12,6 +12,7 @@ export { members } from './members.js';
 export { minutes } from './minutes.js';
 export { documents } from './documents.js';
 export { periods } from './periods.js';
+export { aspirations } from './aspirations.js';
 export { admin } from './admin.js';
 export { adminUsers } from './admin/users.js';
 export { adminRoles } from './admin/roles.js';

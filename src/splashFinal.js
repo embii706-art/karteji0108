@@ -88,9 +88,24 @@
     ensureSplash();
   });
 
+  // Progressive loading simulation
+  let progress = 0;
+  const progressInterval = setInterval(() => {
+    progress += Math.random() * 15;
+    if (progress >= 90) progress = 90;
+    const bar = document.querySelector('.k-bar > i');
+    if (bar) {
+      bar.style.animation = 'none';
+      bar.style.width = progress + '%';
+      bar.style.transform = 'translateX(0)';
+    }
+  }, 300);
+
   // Fail-safe: kalau init/auth/firestore nge-hang, tetap masuk UI
   setTimeout(() => {
-    // Jangan nunggu selamanya. Hilangkan splash, tampilkan UI.
-    hideNow("Menyiapkan aplikasi…");
-  }, 4500);
+    clearInterval(progressInterval);
+    const bar = document.querySelector('.k-bar > i');
+    if (bar) bar.style.width = '100%';
+    setTimeout(() => hideNow("Siap digunakan"), 400);
+  }, 2500);
 })();

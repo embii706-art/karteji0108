@@ -18,6 +18,7 @@ const routes = {
   '#/minutes': pages.minutes,
   '#/documents': pages.documents,
   '#/periods': pages.periods,
+  '#/aspirations': pages.aspirations,
   '#/admin': pages.admin,
   '#/admin/users': pages.adminUsers,
   '#/admin/roles': pages.adminRoles,

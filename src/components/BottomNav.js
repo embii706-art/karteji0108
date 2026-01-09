@@ -5,12 +5,12 @@ const items = [
   { hash:'#/home', icon:'home', label:'Beranda' },
   { hash:'#/feed', icon:'newspaper', label:'Feed' },
   { hash:'#/activities', icon:'event', label:'Kegiatan' },
-  { hash:'#/finance', icon:'account_balance_wallet', label:'Kas' },
+  { hash:'#/aspirations', icon:'campaign', label:'Aspirasi' },
   { hash:'#/profile', icon:'person', label:'Profil' },
 ];
 
 export function shouldShowBottomNav(hash){
-  return ['#/home','#/feed','#/activities','#/finance','#/profile','#/admin','#/calendar','#/members','#/minutes','#/documents','#/periods','#/admin/users','#/admin/roles','#/admin/inbox'].includes(hash);
+  return ['#/home','#/feed','#/activities','#/aspirations','#/finance','#/profile','#/admin','#/calendar','#/members','#/minutes','#/documents','#/periods','#/admin/users','#/admin/roles','#/admin/inbox'].includes(hash);
 }
 
 export function mountBottomNav(){

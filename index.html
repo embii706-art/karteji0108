@@ -3,20 +3,92 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0F172A" />
-  <title>KARTEJI</title>
-
+  
+  <!-- Primary Meta Tags -->
+  <title>KARTEJI - Karang Taruna RT 01 Digital</title>
+  <meta name="title" content="KARTEJI - Karang Taruna RT 01 Digital" />
+  <meta name="description" content="Aplikasi manajemen organisasi Karang Taruna RT 01. Kelola kegiatan, keuangan, aspirasi warga, dan dokumen secara digital." />
+  <meta name="keywords" content="karang taruna, RT 01, organisasi pemuda, manajemen kegiatan, kas digital, aspirasi warga" />
+  <meta name="author" content="KARTEJI Team" />
+  
+  <!-- Theme & PWA -->
+  <meta name="theme-color" content="#0F172A" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#F1F5F9" media="(prefers-color-scheme: light)" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KARTEJI" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://karteji.vercel.app/" />
+  <meta property="og:title" content="KARTEJI - Karang Taruna RT 01 Digital" />
+  <meta property="og:description" content="Aplikasi manajemen organisasi Karang Taruna RT 01. Kelola kegiatan, keuangan, aspirasi warga, dan dokumen secara digital." />
+  <meta property="og:image" content="/assets/og-image.png" />
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://karteji.vercel.app/" />
+  <meta property="twitter:title" content="KARTEJI - Karang Taruna RT 01 Digital" />
+  <meta property="twitter:description" content="Aplikasi manajemen organisasi Karang Taruna RT 01" />
+  <meta property="twitter:image" content="/assets/og-image.png" />
+  
+  <!-- Icons & Manifest -->
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-512.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icon-512.png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="icon" href="/apple-touch-icon.png" />
-
+  <link rel="shortcut icon" href="/apple-touch-icon.png" />
+  
+  <!-- Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: {} } }
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: 'rgb(var(--primary))',
+          },
+          screens: {
+            'xs': '480px',
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'fade-in': 'fadeIn 0.3s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+          },
+        },
+      },
+    }
   </script>
+  
+  <!-- Preconnect for faster loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" />
 </head>
 
-<body class="text-slate-900 dark:text-slate-100" style="background: var(--bg-solid); background-image: var(--bg); background-attachment: fixed;">
+<body class="text-slate-900 dark:text-slate-100 antialiased" style="background: var(--bg-solid); background-image: var(--bg); background-attachment: fixed;">
+  
+  <!-- Background Layer -->
   <style>
     body::before {
       content: '';
@@ -24,87 +96,232 @@
       inset: 0;
       background: var(--bg);
       z-index: -1;
+      pointer-events: none;
+    }
+    
+    /* Material Symbols Config */
+    .material-symbols-rounded {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    
+    /* Loading Animation */
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+    
+    .progress-bar-shimmer {
+      animation: shimmer 2s infinite linear;
+      background: linear-gradient(to right, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+      background-size: 1000px 100%;
     }
   </style>
-  <div id="splash" class="fixed inset-0 z-[9999] flex items-center justify-center">
-    <div class="w-[min(360px,92vw)] rounded-2xl glass-card backdrop-blur p-5 shadow-2xl text-center">
-      <img src="/apple-touch-icon.png" alt="Logo KARTEJI" class="w-[72px] h-[72px] mx-auto rounded-2xl shadow-lg object-cover animate-float" />
-      <div class="mt-3 text-lg font-extrabold tracking-wide gradient-text">KARTEJI v2.5</div>
-      <div id="splashText" class="mt-1 text-sm text-slate-600 dark:text-slate-300">Memuat…</div>
-      <div class="mt-4 h-2 rounded-full bg-slate-200/70 dark:bg-slate-700/60 overflow-hidden">
-        <div class="h-full w-1/3 rounded-full gradient-primary animate-pulse"></div>
+  
+  <!-- Splash Screen -->
+  <div id="splash" class="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div class="w-[min(380px,92vw)] rounded-3xl glass-card backdrop-blur-xl p-8 shadow-2xl text-center border border-white/10">
+      <!-- Logo -->
+      <div class="relative">
+        <div class="absolute inset-0 blur-2xl bg-blue-500/30 rounded-full"></div>
+        <img src="/apple-touch-icon.png" alt="Logo KARTEJI" class="relative w-24 h-24 mx-auto rounded-3xl shadow-2xl object-cover animate-float" />
       </div>
+      
+      <!-- Title -->
+      <div class="mt-6">
+        <h1 class="text-2xl font-extrabold tracking-wide gradient-text">KARTEJI</h1>
+        <p class="text-sm text-slate-400 mt-1 font-medium">Karang Taruna RT 01</p>
+        <div class="inline-block mt-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">
+          v2.5 Digital
+        </div>
+      </div>
+      
+      <!-- Loading Text -->
+      <div id="splashText" class="mt-5 text-sm text-slate-300 font-medium">
+        <span class="inline-flex items-center gap-2">
+          <span class="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse"></span>
+          Memuat aplikasi...
+        </span>
+      </div>
+      
+      <!-- Progress Bar -->
+      <div class="mt-5 h-2 rounded-full bg-slate-800/60 overflow-hidden relative">
+        <div id="progressBar" class="h-full w-0 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500"></div>
+        <div class="absolute inset-0 progress-bar-shimmer"></div>
+      </div>
+      
+      <!-- Subtitle -->
+      <p class="mt-4 text-xs text-slate-500">
+        Menghubungkan ke Firebase...
+      </p>
     </div>
   </div>
-
+  
+  <!-- Main App Container -->
   <main id="app" class="min-h-screen"></main>
+  
+  <!-- Bottom Navigation Placeholder -->
+  <nav id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300">
+    <div class="h-16 flex items-center"></div>
+  </nav>
 
+  <!-- Splash Screen Logic & Main Module Loader -->
   <script>
     (function(){
       const splash = document.getElementById('splash');
       const splashText = document.getElementById('splashText');
+      const progressBar = document.getElementById('progressBar');
       const app = document.getElementById('app');
+      
+      // Progress animation
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        if (progressBar) progressBar.style.width = progress + '%';
+      }, 200);
+
+      function completeSplash() {
+        if (progressBar) progressBar.style.width = '100%';
+        clearInterval(progressInterval);
+      }
 
       function hideSplash(){
         if(!splash) return;
-        splash.style.opacity = '0';
-        splash.style.transition = 'opacity 220ms ease';
-        setTimeout(()=> splash.remove(), 240);
+        completeSplash();
+        setTimeout(() => {
+          splash.style.opacity = '0';
+          splash.style.transition = 'opacity 400ms ease-out';
+          setTimeout(() => {
+            splash.remove();
+          }, 420);
+        }, 200);
       }
 
       function showError(title, detail){
-        hideSplash();
-        app.innerHTML = `
-          <section class="p-4 max-w-md mx-auto space-y-3">
-            <div class="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
-              <div class="font-semibold text-base">${title}</div>
-              <div class="text-sm opacity-80 mt-1">${detail}</div>
-              <div class="flex gap-2 mt-3">
-                <button id="btnReload" class="w-full rounded-xl px-4 py-2 bg-blue-600 text-white">Muat Ulang</button>
-                <button id="btnBypass" class="w-full rounded-xl px-4 py-2 border border-slate-200 dark:border-slate-700">Lewati Splash</button>
+        completeSplash();
+        setTimeout(() => {
+          hideSplash();
+          app.innerHTML = `
+            <section class="p-6 max-w-lg mx-auto mt-12 animate-fade-in">
+              <div class="glass-card rounded-3xl border border-red-500/20 p-6 bg-gradient-to-br from-red-500/5 to-orange-500/5">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="material-symbols-rounded text-4xl text-red-500">error</span>
+                  <div>
+                    <div class="font-bold text-lg text-red-600 dark:text-red-400">${title}</div>
+                  </div>
+                </div>
+                <div class="text-sm opacity-90 leading-relaxed mb-5 pl-12">${detail}</div>
+                <div class="flex gap-3">
+                  <button id="btnReload" class="flex-1 rounded-xl px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:shadow-lg transition-all hover:scale-105">
+                    <span class="material-symbols-rounded text-lg mr-2 align-middle">refresh</span>
+                    Muat Ulang
+                  </button>
+                  <button id="btnBypass" class="flex-1 rounded-xl px-5 py-3 border border-white/20 hover:bg-white/5 font-semibold transition-all">
+                    Lewati
+                  </button>
+                </div>
+                <div class="mt-5 p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
+                  <div class="text-xs opacity-70 leading-relaxed">
+                    <strong>💡 Tips:</strong> Jika masalah berlanjut, coba:
+                    <ul class="list-disc list-inside mt-2 space-y-1 ml-2">
+                      <li>Hapus cache browser (Ctrl+Shift+Delete)</li>
+                      <li>iOS: Hapus cache Safari atau reinstall PWA</li>
+                      <li>Pastikan koneksi internet stabil</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
-              <div class="text-xs opacity-70 mt-3">
-                Tips iOS: hapus cache Safari / uninstall PWA lalu install ulang.
-              </div>
-            </div>
-          </section>
-        `;
-        document.getElementById('btnReload')?.addEventListener('click', ()=> location.reload());
-        document.getElementById('btnBypass')?.addEventListener('click', ()=> { hideSplash(); location.hash = '#/home'; });
+            </section>
+          `;
+          document.getElementById('btnReload')?.addEventListener('click', () => location.reload());
+          document.getElementById('btnBypass')?.addEventListener('click', () => {
+            location.hash = '#/home';
+          });
+        }, 300);
       }
 
-      setTimeout(()=>{
-        if (splashText) splashText.textContent = 'Menyiapkan aplikasi…';
+      // Timeout fallback
+      const timeoutId = setTimeout(() => {
+        if (splashText) {
+          splashText.innerHTML = '<span class="inline-flex items-center gap-2"><span class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>Menyiapkan UI...</span>';
+        }
         if (splash && document.body.contains(splash)) {
           hideSplash();
           if (app && !app.innerHTML.trim()) {
             app.innerHTML = `
-              <section class="p-4 max-w-md mx-auto">
-                <div class="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 bg-white dark:bg-slate-900">
-                  <div class="font-semibold">UI belum tampil.</div>
-                  <div class="text-sm opacity-80 mt-1">
-                    Biasanya karena JavaScript utama tidak termuat di hosting (404 / path salah / cache SW).
+              <section class="p-6 max-w-lg mx-auto mt-12">
+                <div class="glass-card rounded-3xl border border-yellow-500/20 p-6">
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="material-symbols-rounded text-3xl text-yellow-500">warning</span>
+                    <div class="font-bold text-lg">UI Belum Tampil</div>
                   </div>
+                  <div class="text-sm opacity-80 leading-relaxed">
+                    JavaScript utama tidak termuat. Kemungkinan penyebab:
+                    <ul class="list-disc list-inside mt-2 ml-2 space-y-1">
+                      <li>File hilang saat deploy (404)</li>
+                      <li>Service Worker cache lama</li>
+                      <li>Path salah di konfigurasi hosting</li>
+                    </ul>
+                  </div>
+                  <button onclick="location.reload()" class="mt-4 w-full rounded-xl px-5 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors">
+                    Muat Ulang Aplikasi
+                  </button>
                 </div>
               </section>
             `;
           }
         }
-      }, 5000);
+      }, 6000);
 
+      // Load main application module
       (async () => {
         try {
-          if (splashText) splashText.textContent = 'Memuat modul…';
+          if (splashText) {
+            splashText.innerHTML = '<span class="inline-flex items-center gap-2"><span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>Memuat modul...</span>';
+          }
+          
+          // Import main module
           await import('/src/main.js');
+          
+          // Clear timeout if successful
+          clearTimeout(timeoutId);
+          
         } catch (e) {
-          console.error('MAIN MODULE ERROR', e);
+          console.error('❌ MAIN MODULE ERROR:', e);
+          clearTimeout(timeoutId);
+          
           const msg = (e && e.message) ? e.message : String(e);
-          showError('Gagal memuat JavaScript aplikasi.',
-            'Error: <code>' + msg.replace(/</g,'&lt;') + '</code><br/>Pastikan file <code>/src/main.js</code> ada di hasil deploy (tidak hilang saat build Vercel).'
+          const safeMsg = msg.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          
+          showError(
+            'Gagal Memuat Aplikasi',
+            `<strong>Error:</strong> <code class="px-2 py-1 rounded bg-black/30 text-red-400 text-xs">${safeMsg}</code><br/><br/>
+            Pastikan file <code class="px-1.5 py-0.5 rounded bg-black/30 text-xs">/src/main.js</code> tersedia di server.`
           );
         }
       })();
     })();
+  </script>
+  
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.warn('⚠️ Service Worker registration failed:', err));
+      });
+    }
+  </script>
+  
+  <!-- PWA Install Prompt -->
+  <script>
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('💾 PWA install prompt available');
+    });
   </script>
 </body>
 </html>

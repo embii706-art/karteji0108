@@ -15,14 +15,25 @@ import { initSearchData, openSearch } from './components/SmartSearch.js';
 import { shareContent, mountShareButton } from './components/SocialShare.js';
 
 function removeSplash(reason = "") {
-  // 1) splashFinal API (jika ada)
-  try { window.KARTEJI_SPLASH?.done(reason); } catch {}
-  // 2) fallback: remove #splash element
-  const splash = document.getElementById('splash');
-  if (splash) {
-    splash.classList.add('opacity-0');
-    setTimeout(() => splash.remove(), 320);
+  // Complete progress bar first
+  const bar = document.querySelector('.k-bar > i');
+  if (bar) {
+    bar.style.animation = 'none';
+    bar.style.width = '100%';
+    bar.style.transform = 'translateX(0)';
   }
+  
+  // Wait a bit for visual feedback
+  setTimeout(() => {
+    // 1) splashFinal API (jika ada)
+    try { window.KARTEJI_SPLASH?.done(reason || "Siap digunakan"); } catch {}
+    // 2) fallback: remove #splash element
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('opacity-0');
+      setTimeout(() => splash.remove(), 320);
+    }
+  }, 200);
 }
 
 function withTimeout(promise, ms, label = "timeout") {

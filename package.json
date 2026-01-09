@@ -4,9 +4,15 @@
   "description": "KARTEJI - Modern SPA with Premium UI and Advanced Features",
   "type": "module",
   "scripts": {
-    "dev": "npx http-server -p 3000 -c-1",
+    "dev": "npx http-server -p 3000 -c-1 --cors",
+    "start": "npm run dev",
     "build": "echo 'No build step required - static files'",
-    "preview": "npx http-server dist -p 3000"
+    "preview": "npx http-server . -p 8080 -c-1 --cors",
+    "setup": "cd functions && npm install",
+    "deploy:hosting": "firebase deploy --only hosting",
+    "deploy:functions": "firebase deploy --only functions",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "deploy:all": "firebase deploy"
   },
   "keywords": [
     "spa",
